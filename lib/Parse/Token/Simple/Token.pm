@@ -1,7 +1,7 @@
 package Parse::Token::Simple::Token;
 use Moo;
 
-our $VERSION = '0.100'; # VERSION
+our $VERSION = '0.110'; # VERSION
 # ABSTRACT: Token class
 
 
@@ -25,7 +25,7 @@ Parse::Token::Simple::Token - Token class
 
 =head1 VERSION
 
-version 0.100
+version 0.110
 
 =head1 ATTRIBUTES
 

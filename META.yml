@@ -23,4 +23,4 @@ requires:
 resources:
   homepage: https://github.com/sng2c/Parse-Token-Simple
   repository: git://github.com/sng2c/Parse-Token-Simple.git
-version: 0.100
+version: 0.110

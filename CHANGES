@@ -3,8 +3,16 @@ Changes from 2012-07-01 00:00:00 +0000 to present.
 ==================================================
 
 ------------------------------------------
-version 0.100 at 2013-07-01 05:05:09 +0000
+version 0.110 at 2013-07-01 07:47:22 +0000
 ------------------------------------------
+
+  Change: f68fa07aa37558bbed8002327d60902d8da6c299
+  Author: sng2c <sng2nara@gmail.com>
+  Date : 2013-07-01 16:47:01 +0000
+
+    Add more docs.
+
+    parse() has more on array context 
 
   Change: 0dc87fab604f663a399f720eea271afd385d830e
   Author: sng2c <sng2nara@gmail.com>

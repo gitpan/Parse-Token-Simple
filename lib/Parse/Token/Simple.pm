@@ -6,7 +6,7 @@ use Parse::Token::Simple::Token;
 use Parse::Token::Simple::Rule;
 Log::Log4perl->easy_init($ERROR);
 
-our $VERSION = '0.100'; # VERSION
+our $VERSION = '0.110'; # VERSION
 # ABSTRACT: Simply parse String into tokens with rules which are similar to Lex.
 
 
@@ -43,10 +43,14 @@ sub parse{
 	my $self = shift;
 	my $data = shift;
 	$self->from($data) if defined $data;
-
+	
+	my @tokens;
 	while(!$self->eof){
-		$self->nextToken;
+		my @ret = $self->nextToken;
+		push(@tokens,\@ret) if wantarray;
 	}
+	return @tokens if wantarray;
+	return 1;
 }
 
 
@@ -112,7 +116,6 @@ sub start{
 	push(@{$self->state_stack}, $state);
 }
 
-
 sub end{
 	my $self = shift;
 	my $state = shift;
@@ -127,6 +130,7 @@ sub state{
 	return $self->state_stack->[@{$self->state_stack}-1];
 }
 
+
 1;
 
 __END__
@@ -139,7 +143,7 @@ Parse::Token::Simple - Simply parse String into tokens with rules which are simi
 
 =head1 VERSION
 
-version 0.100
+version 0.110
 
 =head1 SYNOPSIS
 
@@ -219,10 +223,13 @@ This causes resetting state_stack.
 
 =head2 parse($data)
 
+On Scalar context : Returns 1
+On Array context : Returns array of [L<Parse::Token::Simple::Token>,@return_values_of_callback].
+
 Parse all tokens on Event driven.
 Just call nextToken() during that eof() is not 1.
 
-$data causes calling from($data).
+Defined $data causes calling from($data).
 
 You should set a callback function at 'func' attribute in 'rulemap' to do something with tokens.
 
@@ -230,13 +237,17 @@ You should set a callback function at 'func' attribute in 'rulemap' to do someth
 
 Returns an array reference of rules of current state. 
 
+See L<Parse::Token::Simple::Rule>.
+
 =head2 nextToken()
 
 On Scalar context : Returns L<Parse::Token::Simple::Token> object.
-On Array context : Returns L<Parse::Token::Simple::Token> object and return values of callback function defined in current Rule.
+On Array context : Returns (L<Parse::Token::Simple::Token>,@return_values_of_callback).
 
 	my ($token, @ret) = $parser->nextToken;
 	print $token->rule->name . '->' . $token->data . "\n";
+
+See L<Parse::Token::Simple::Token> and L<Parse::Token::Simple::Rule>.
 
 =head2 eof()
 
@@ -244,23 +255,57 @@ Returns 1 when no more text is.
 
 =head2 start($state)
 
-Push the state on state_stack.
-
-Also, this is called by a 'state' definition of L<Parse::Token::Simple::Rule>.
-
 =head2 end()
 
 =head2 end($state)
 
-Pop the state on state_stack.
+Push/Pop the state on state_stack to implement AUTOMATA.
 
 Also, this is called by a 'state' definition of L<Parse::Token::Simple::Rule>.
 
-$state is optional.
+You can set rules as Lexer like.
+
+	my $rulemap = {
+		MAIN => [
+			{ name=>'QUOTE', re=>qr/'/, func=>
+				sub{ 
+					my ($parser,$token) = @_;
+					$parser->start('STATE_QUOTE'); # push
+				}
+			},
+			{ name=>'ANY', re=>qr/.+/ },
+		],
+		STATE_QUOTE => [
+			{ name=>'QUOTE_PAIR', re=>qr/'/, func=>
+				sub{ 
+					my ($parser,$token) = @_;
+					$parser->end('STATE_QUOTE'); # pop
+				}
+			},
+			{ name=>'QUOTED_TEXT', re=>qr/.+/ }
+		],
+	};
+
+You can also do it in simple way.
+
+	my $rulemap = {
+		MAIN => [
+			{ name=>'QUOTE', re=>qr/'/, state=>['+STATE_QUOTE'] }, # push
+			{ name=>'ANY', re=>qr/.+/ },
+		],
+		STATE_QUOTE => [
+			{ name=>'QUOTE_PAIR', re=>qr/'/, state=>['-STATE_QUOTE] }, #pop
+			{ name=>'QUOTED_TEXT', re=>qr/.+/ }
+		],
+	};
 
 =head2 state()
 
 Returns current state by peeking top of 'state_stack'.
+
+=head1 SEE ALSO
+
+See L<Parse::Token::Simple::Token> and L<Parse::Token::Simple::Rule>.
 
 =head1 AUTHOR
 
